@@ -29,8 +29,8 @@ public class Rope : MonoBehaviour {
         for (int i = 0; i < numberOfNodes; i++)
         {
             nodes.Add(new Node());
-            nodes[i].currentPosition = transform.position + Vector3.down * numberOfNodes * i;
-            nodes[i].lastPosition = transform.position + Vector3.down * numberOfNodes * i;
+            nodes[i].currentPosition = transform.position + Vector3.right /** numberOfNodes*/ * i;
+            nodes[i].lastPosition = transform.position + Vector3.right /** numberOfNodes*/ * i;
         }
 
         rope = GetComponent<LineRenderer>();
@@ -42,17 +42,24 @@ public class Rope : MonoBehaviour {
 
     void FixedUpdate()
     {
-        for (int i = 0; i < nodes.Count; i++)
+        
+        for (int j = 0; j < 100; ++j)
         {
-            if (i != 0)
+            for (int i = 0; i < nodes.Count; i++)
             {
-                Restraint(nodes[i], nodes[i - 1]);
+                if (i != 0)
+                {
+                    if(i==1)
+                        Restraint(nodes[i], nodes[i - 1],1.0f,0.0f);
+                    else
+                        Restraint(nodes[i], nodes[i - 1], 0.5f, 0.5f);
+                }
             }
         }
         Verlet(acceleration);
     }
 
-    void Restraint(Node node1, Node node2)
+    void Restraint(Node node1, Node node2,float c1,float c2)
     {
         float differenceBetweenX = node1.currentPosition.x - node2.currentPosition.x;
         float differenceBetweenY = node1.currentPosition.y - node2.currentPosition.y;
@@ -63,12 +70,12 @@ public class Rope : MonoBehaviour {
         float distanceBetween = Vector3.Distance(node1.currentPosition, node2.currentPosition);
         float difference = ((distance - distanceBetween) / distanceBetween);
 
-        float translateNodeX = differenceBetweenX * 0.5f * difference;
-        float translateNodeY = differenceBetweenY * 0.5f * difference;
-        float translateNodeZ = differenceBetweenZ * 0.5f * difference;
+        float translateNodeX = differenceBetweenX * difference;
+        float translateNodeY = differenceBetweenY * difference;
+        float translateNodeZ = differenceBetweenZ * difference;
 
-        node1.currentPosition = new Vector3(node1.currentPosition.x + translateNodeX, node1.currentPosition.y + translateNodeY, node1.currentPosition.z + translateNodeZ);
-        node2.currentPosition = new Vector3(node2.currentPosition.x + translateNodeX, node2.currentPosition.y + translateNodeY, node2.currentPosition.z + translateNodeZ);
+        node1.currentPosition = new Vector3(node1.currentPosition.x + translateNodeX*c1, node1.currentPosition.y + translateNodeY *c1, node1.currentPosition.z + translateNodeZ*c1);
+        node2.currentPosition = new Vector3(node2.currentPosition.x - translateNodeX * c2, node2.currentPosition.y - translateNodeY * c2, node2.currentPosition.z - translateNodeZ * c2);
     }
 
     void Verlet(Vector3 ropeAcceleration)
